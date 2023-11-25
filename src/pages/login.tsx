@@ -5,31 +5,30 @@ import { Loading } from "~/components/Loading";
 import { useUser } from "~/hooks/user";
 
 export default function Login() {
-  const { login, loading, username } = useUser();
+  const { login, loading, user } = useUser();
   const router = useRouter();
-  const [inputValue, setInputValue] = useState("");
+  const [username, setUsername] = useState("");
 
   if (loading) {
     return <Loading />;
   }
 
-  if (username) {
+  if (user) {
     void router.push("/");
     return null;
   }
 
   function handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
     const value = event.target.value.replace(/\W/g, "");
-    setInputValue(value);
+    setUsername(value);
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    console.log("submit", inputValue);
-    await login(inputValue);
+    await login(username);
   }
 
-  const buttonEnabled = inputValue.length > 0;
+  const buttonEnabled = username.length > 0;
 
   return (
     <>
@@ -50,7 +49,7 @@ export default function Login() {
             type="text"
             placeholder="Usuário"
             className="rounded px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={inputValue}
+            value={username}
             onChange={handleInputChange}
           />
 
