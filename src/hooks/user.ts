@@ -14,5 +14,10 @@ export function useUser() {
     setLoading(false);
   }, []);
 
-  return { loading, username };
+  async function login(username: string) {
+    localStorage.setItem("username", username);
+    setUsername(username);
+  }
+
+  return { loading, username, login };
 }
