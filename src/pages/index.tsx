@@ -4,14 +4,14 @@ import { Loading } from "~/components/Loading";
 import { useUser } from "~/hooks/user";
 
 export default function Home() {
-  const { loading, username } = useUser();
+  const { loading, user } = useUser();
   const router = useRouter();
 
   if (loading) {
     return <Loading />;
   }
 
-  if (!username) {
+  if (!user) {
     void router.push("/login");
     return null;
   }
