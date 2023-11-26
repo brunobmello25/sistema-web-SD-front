@@ -1,23 +1,28 @@
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { useQuery } from "react-query";
+import { useMutation, useQuery } from "react-query";
 
 import { Loading } from "~/components/Loading";
 import { useAppContext } from "~/context/app-context";
 import { loadCategories } from "~/services/load-categories";
 import { Category } from "~/components/Category";
+import { ModalContainer } from "~/components/ModalContainer";
+import { useModal } from "~/context/modal-context";
+import { AddCategoryModal } from "~/components/AddCategoryModal";
+import { createCategory } from "~/services/create-category";
 
 export default function Home() {
   const { loading: userLoading, user, api, loggedApiReady } = useAppContext();
   const router = useRouter();
+  const { setModal } = useModal();
 
-  const { data: categories, isLoading: apiLoading } = useQuery(
-    "load-categories",
-    () => loadCategories(api),
-    {
-      enabled: loggedApiReady,
-    },
-  );
+  const {
+    refetch,
+    data: categories,
+    isLoading: apiLoading,
+  } = useQuery("load-categories", () => loadCategories(api), {
+    enabled: loggedApiReady,
+  });
 
   if (userLoading || apiLoading) {
     return <Loading />;
@@ -51,13 +56,15 @@ export default function Home() {
           {/* Add Category Button */}
           <button
             className="mt-6 w-full rounded bg-green-500 py-2 text-white hover:bg-green-600 focus:outline-none"
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
-            onClick={() => {}} // Replace with function to add new category
+            onClick={() =>
+              setModal(<AddCategoryModal onCategoryCreated={refetch} />)
+            }
           >
             Adicionar Categoria
           </button>
         </div>
       </main>
+      <ModalContainer />
     </>
   );
 }
