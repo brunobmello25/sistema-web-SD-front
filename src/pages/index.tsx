@@ -68,6 +68,7 @@ export default function Home() {
                 category={category}
                 onTaskCreated={refetch}
                 onTaskUpdated={refetch}
+                onTaskDeleted={refetch}
               />
             ))}
           </div>

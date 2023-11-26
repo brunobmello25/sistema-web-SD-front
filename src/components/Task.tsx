@@ -6,13 +6,15 @@ import { useState } from "react";
 import { useMutation } from "react-query";
 import { updateTask } from "~/services/update-task";
 import { useAppContext } from "~/context/app-context";
+import { deleteTask } from "~/services/delete-task";
 
 type Props = {
   task: Task;
   onTaskUpdated: () => void;
+  onTaskDeleted: () => void;
 };
 
-export function Task({ onTaskUpdated, task }: Props) {
+export function Task({ onTaskUpdated, onTaskDeleted, task }: Props) {
   const { setModal } = useModal();
   const { api } = useAppContext();
   const [checked, setChecked] = useState(task.done);
@@ -20,6 +22,25 @@ export function Task({ onTaskUpdated, task }: Props) {
   const updateCheckedMutation = useMutation((checked: boolean) =>
     updateTask({ done: checked, title: task.title, taskId: task.id }, api),
   );
+
+  const deleteMutation = useMutation(() =>
+    deleteTask({ taskId: task.id }, api),
+  );
+
+  function handleDelete() {
+    deleteMutation
+      .mutateAsync()
+      .then(() => {
+        onTaskDeleted();
+      })
+      .catch((err) => {
+        console.error(err);
+        alert("Erro ao deletar tarefa. Por favor tente novamente.");
+      })
+      .finally(() => {
+        setModal(null);
+      });
+  }
 
   function handleOnCheck() {
     const originalStatus = task.done;
@@ -58,7 +79,10 @@ export function Task({ onTaskUpdated, task }: Props) {
         >
           <FaEdit />
         </button>
-        <button className="text-red-500 hover:text-red-600">
+        <button
+          onClick={handleDelete}
+          className="text-red-500 hover:text-red-600"
+        >
           <FaTrash />
         </button>
       </div>
