@@ -2,10 +2,10 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { Loading } from "~/components/Loading";
-import { useUser } from "~/hooks/user";
+import { useAppContext } from "~/context/app-context";
 
 export default function Login() {
-  const { login, loading, user } = useUser();
+  const { login, loading, user } = useAppContext();
   const router = useRouter();
   const [username, setUsername] = useState("");
 
@@ -41,7 +41,7 @@ export default function Login() {
       </Head>
       <main className="flex min-h-screen flex-col items-center justify-center bg-gray-800 p-2">
         <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
-          <h1 className="mb-6 font-mono text-3xl text-gray-300">
+          <h1 className="mb-6 font-sans text-3xl text-gray-300">
             Por favor, digite seu usuário
           </h1>
 
@@ -56,7 +56,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={!buttonEnabled}
-            className={`rounded bg-blue-500 px-4 py-2 font-mono text-xl text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+            className={`rounded bg-blue-500 px-4 py-2 font-sans text-xl text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
               buttonEnabled ? "" : "cursor-not-allowed opacity-50"
             }`}
           >
