@@ -1,6 +1,7 @@
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { useQuery } from "react-query";
+import { useMutation, useQuery } from "react-query";
+import { useDrop } from "react-dnd";
 
 import { Loading } from "~/components/Loading";
 import { useAppContext } from "~/context/app-context";
@@ -9,6 +10,14 @@ import { Category } from "~/components/Category";
 import { ModalContainer } from "~/components/ModalContainer";
 import { useModal } from "~/context/modal-context";
 import { AddCategoryModal } from "~/components/AddCategoryModal";
+import { dragableTypes } from "~/constants/dragable-types";
+import { reorderCategory } from "~/services/reorder-category";
+import {
+  type Category as ICategory,
+  type DragableItem,
+  type DropPosition,
+} from "~/protocols";
+import { useCallback } from "react";
 
 export default function Home() {
   const {
@@ -21,6 +30,11 @@ export default function Home() {
   const router = useRouter();
   const { setModal } = useModal();
 
+  const reorderMutation = useMutation(
+    ({ categoryId, beAfter }: { categoryId: number; beAfter: number }) =>
+      reorderCategory({ beAfter, categoryId }, api),
+  );
+
   const {
     refetch,
     data: categories,
@@ -28,6 +42,45 @@ export default function Home() {
   } = useQuery("load-categories", () => loadCategories(api), {
     enabled: loggedApiReady,
   });
+
+  const handleCategoryDrop = useCallback(
+    (
+      categoryId: number,
+      categories: ICategory[] | undefined,
+      dropPosition: DropPosition | null,
+    ) => {
+      if (!categories || !dropPosition) return;
+
+      const idToBeAfter = findCategoryIdToBeAfter(categories, dropPosition);
+
+      let beAfter = 0;
+      if (idToBeAfter) {
+        beAfter = categories.find((c) => c.id === idToBeAfter)?.position ?? 0;
+      }
+
+      reorderMutation
+        .mutateAsync({ beAfter, categoryId })
+        .then(() => refetch())
+        .catch(() => {
+          alert("Erro ao reordenar categoria. Por favor tente novamente.");
+        });
+    },
+    [categories],
+  );
+
+  const [{ isOver }, drop] = useDrop<DragableItem, void, void>(
+    () => ({
+      accept: dragableTypes.CATEGORY,
+      drop: (item, monitor) => {
+        const dropPosition = monitor.getClientOffset();
+        handleCategoryDrop(item.id, categories, dropPosition);
+      },
+      collect: (monitor) => ({
+        isOver: !!monitor.isOver(),
+      }),
+    }),
+    [categories],
+  );
 
   if (userLoading || apiLoading) {
     return <Loading />;
@@ -59,7 +112,7 @@ export default function Home() {
             </button>
           </div>
 
-          <div className="space-y-6">
+          <div ref={drop} className="space-y-6 p-4">
             {categories?.map((category) => (
               <Category
                 onDelete={refetch}
@@ -85,4 +138,39 @@ export default function Home() {
       <ModalContainer />
     </>
   );
+}
+
+function findCategoryIdToBeAfter(
+  categories: ICategory[],
+  dropPosition: DropPosition,
+): number | null {
+  let nearestCategoryId = null;
+  let minDistance = Infinity;
+
+  categories.forEach((category) => {
+    const categoryElement = document.getElementById(`category-${category.id}`);
+    if (categoryElement) {
+      const rect = categoryElement.getBoundingClientRect();
+      const { distance, isBelow } = calculateDistanceToEdge(rect, dropPosition);
+      if (distance < minDistance && isBelow) {
+        minDistance = distance;
+        nearestCategoryId = category.id;
+      }
+    }
+  });
+
+  return nearestCategoryId;
+}
+
+function calculateDistanceToEdge(
+  rect: DOMRect,
+  dropPosition: { x: number; y: number },
+): { distance: number; isBelow: boolean } {
+  const centerY = rect.top + rect.height / 2;
+  const isBelow = dropPosition.y > centerY; // Check if the drop is below the midpoint
+
+  const nearestEdge = isBelow ? rect.bottom : rect.top;
+  const distance = Math.abs(nearestEdge - dropPosition.y);
+
+  return { distance, isBelow };
 }
