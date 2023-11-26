@@ -1,9 +1,14 @@
 import { useMutation } from "react-query";
-import { useDrag } from "react-dnd";
+import { useDrag, useDrop } from "react-dnd";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { MdDragIndicator } from "react-icons/md";
 
-import { type DragableItem, type Category } from "~/protocols";
+import type {
+  DragableItem,
+  Category,
+  Task as ITask,
+  DropPosition,
+} from "~/protocols";
 import { useModal } from "~/context/modal-context";
 import { useAppContext } from "~/context/app-context";
 import { deleteCategory } from "~/services/delete-category";
@@ -12,6 +17,9 @@ import { Task } from "./Task";
 import { EditCategoryModal } from "./EditCategoryModal";
 import { CreateTaskModal } from "./CreateTaskModal";
 import { dragableTypes } from "~/constants/dragable-types";
+import { useCallback } from "react";
+import { findDragableIdToBeAfter } from "~/utils/drag";
+import { reorderTask } from "~/services/reorder-task";
 
 type Props = {
   category: Category;
@@ -20,6 +28,7 @@ type Props = {
   onTaskCreated: () => void;
   onTaskUpdated: () => void;
   onTaskDeleted: () => void;
+  onTaskReordered: () => void;
 };
 
 export function Category({
@@ -29,11 +38,12 @@ export function Category({
   onTaskCreated,
   onTaskUpdated,
   onTaskDeleted,
+  onTaskReordered,
 }: Props) {
   const { setModal } = useModal();
   const { api } = useAppContext();
 
-  const [{ isDragging }, drag, preview] = useDrag<
+  const [{ isDragging }, drag] = useDrag<
     DragableItem,
     unknown,
     { isDragging: boolean }
@@ -44,6 +54,56 @@ export function Category({
       isDragging: monitor.isDragging(),
     }),
   }));
+
+  const reorderMutation = useMutation(
+    ({ taskId, beAfter }: { taskId: number; beAfter: number }) =>
+      reorderTask({ beAfter, taskId, categoryId: category.id }, api),
+  );
+
+  const handleTaskDrop = useCallback(
+    (
+      taskId: number,
+      tasks: ITask[] | undefined,
+      dropPosition: DropPosition | null,
+    ) => {
+      if (!tasks || !dropPosition) return;
+
+      const idToBeAfter = findDragableIdToBeAfter(
+        tasks.map((t) => ({ id: t.id, type: dragableTypes.TASK })),
+        dropPosition,
+        dragableTypes.TASK,
+      );
+
+      let beAfter = 0;
+      if (idToBeAfter) {
+        beAfter = tasks.find((t) => t.id === idToBeAfter)?.position ?? 0;
+      }
+
+      console.log(`Reordering task ${taskId} to be after ${idToBeAfter}`);
+
+      reorderMutation
+        .mutateAsync({ beAfter, taskId })
+        .then(onTaskReordered)
+        .catch(() => {
+          alert("Erro ao reordenar tarefa. Por favor tente novamente.");
+        });
+    },
+    [category, category.tasks],
+  );
+
+  const [, drop] = useDrop<DragableItem, void, void>(
+    () => ({
+      accept: dragableTypes.TASK,
+      drop: (item, monitor) => {
+        const dropPosition = monitor.getClientOffset();
+        handleTaskDrop(item.id, category.tasks, dropPosition);
+      },
+      collect: (monitor) => ({
+        isOver: !!monitor.isOver(),
+      }),
+    }),
+    [category.tasks],
+  );
 
   const deleteMutation = useMutation(() =>
     deleteCategory({ categoryId: category.id }, api),
@@ -72,13 +132,13 @@ export function Category({
 
   return (
     <div
-      ref={preview}
+      ref={drag}
       className={`rounded bg-gray-700 p-4 ${isDragging && "opacity-60"}`}
       id={`category-${category.id}`}
     >
       <div className="mb-4 flex items-center justify-between">
         <span className="flex flex-row items-center justify-center font-sans text-xl font-bold text-white">
-          <div className="cursor-pointer" ref={drag}>
+          <div className="cursor-pointer">
             <MdDragIndicator />
           </div>
           {category.name}
@@ -106,7 +166,7 @@ export function Category({
         </div>
       </div>
 
-      <ul className="space-y-2">
+      <ul ref={drop} className="space-y-2 p-4">
         {category.tasks.map((task) => (
           <Task
             key={task.id}

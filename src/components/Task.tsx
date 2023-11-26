@@ -1,12 +1,15 @@
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { useModal } from "~/context/modal-context";
 import { EditTaskModal } from "./EditTaskModal";
-import { type Task } from "~/protocols";
+import { type DragableItem, type Task } from "~/protocols";
 import { useState } from "react";
 import { useMutation } from "react-query";
 import { updateTask } from "~/services/update-task";
 import { useAppContext } from "~/context/app-context";
 import { deleteTask } from "~/services/delete-task";
+import { MdDragIndicator } from "react-icons/md";
+import { useDrag } from "react-dnd";
+import { dragableTypes } from "~/constants/dragable-types";
 
 type Props = {
   task: Task;
@@ -18,6 +21,18 @@ export function Task({ onTaskUpdated, onTaskDeleted, task }: Props) {
   const { setModal } = useModal();
   const { api } = useAppContext();
   const [checked, setChecked] = useState(task.done);
+
+  const [{ isDragging }, drag] = useDrag<
+    DragableItem,
+    unknown,
+    { isDragging: boolean }
+  >(() => ({
+    type: dragableTypes.TASK,
+    item: { id: task.id, type: dragableTypes.TASK },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  }));
 
   const updateCheckedMutation = useMutation((checked: boolean) =>
     updateTask({ done: checked, title: task.title, taskId: task.id }, api),
@@ -59,7 +74,17 @@ export function Task({ onTaskUpdated, onTaskDeleted, task }: Props) {
   }
 
   return (
-    <li className="flex items-center justify-between rounded bg-gray-600 p-2">
+    <li
+      ref={drag}
+      className={`flex items-center justify-between rounded bg-gray-600 p-2 ${
+        isDragging && "opacity-60"
+      }`}
+      id={`task-${task.id}`}
+    >
+      <div className="cursor-pointer text-white">
+        <MdDragIndicator />
+      </div>
+
       <input
         type="checkbox"
         className="mr-2 h-4 w-4"
@@ -67,7 +92,9 @@ export function Task({ onTaskUpdated, onTaskDeleted, task }: Props) {
         onChange={handleOnCheck}
       />
 
-      <span className="flex-grow text-white">{task.title}</span>
+      <span className="flex-grow text-white">
+        {task.id} - {task.title}
+      </span>
       <div className="flex items-center space-x-2">
         <button
           onClick={() =>
