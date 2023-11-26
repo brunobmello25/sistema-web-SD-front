@@ -11,7 +11,7 @@ export default function Home() {
   const { loading: userLoading, user, api, loggedApiReady } = useAppContext();
   const router = useRouter();
 
-  const { data: categories, isFetching } = useQuery(
+  const { data: categories, isLoading: apiLoading } = useQuery(
     "load-categories",
     () => loadCategories(api),
     {
@@ -19,7 +19,7 @@ export default function Home() {
     },
   );
 
-  if (userLoading || isFetching) {
+  if (userLoading || apiLoading) {
     return <Loading />;
   }
 
