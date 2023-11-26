@@ -8,14 +8,14 @@ import { loadCategories } from "~/services/load-categories";
 import { Category } from "~/components/Category";
 
 export default function Home() {
-  const { loading: userLoading, user, api } = useAppContext();
+  const { loading: userLoading, user, api, loggedApiReady } = useAppContext();
   const router = useRouter();
 
   const { data: categories, isFetching } = useQuery(
     "load-categories",
     () => loadCategories(api),
     {
-      enabled: !userLoading && !!user,
+      enabled: loggedApiReady,
     },
   );
 

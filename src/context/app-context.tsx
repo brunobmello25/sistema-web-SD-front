@@ -16,6 +16,7 @@ interface ApiContextType {
   user: User | null;
   login: (username: string) => Promise<void>;
   loading: boolean;
+  loggedApiReady: boolean;
 }
 
 const AppContext = createContext<ApiContextType | null>(null);
@@ -74,8 +75,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const loggedApiReady = !loading && !!user;
+
   return (
-    <AppContext.Provider value={{ user, api, login, loading }}>
+    <AppContext.Provider value={{ user, api, login, loading, loggedApiReady }}>
       {children}
     </AppContext.Provider>
   );
