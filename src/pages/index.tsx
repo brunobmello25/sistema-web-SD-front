@@ -3,10 +3,10 @@ import { FaTrash, FaEdit } from "react-icons/fa";
 import { useRouter } from "next/router";
 
 import { Loading } from "~/components/Loading";
-import { useUser } from "~/hooks/user";
+import { useAppContext } from "~/context/app-context";
 
 export default function Home() {
-  const { loading, user } = useUser();
+  const { loading, user } = useAppContext();
   const router = useRouter();
 
   if (loading) {

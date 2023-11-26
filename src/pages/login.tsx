@@ -2,10 +2,10 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { Loading } from "~/components/Loading";
-import { useUser } from "~/hooks/user";
+import { useAppContext } from "~/context/app-context";
 
 export default function Login() {
-  const { login, loading, user } = useUser();
+  const { login, loading, user } = useAppContext();
   const router = useRouter();
   const [username, setUsername] = useState("");
 
