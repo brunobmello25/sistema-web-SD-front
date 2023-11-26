@@ -81,7 +81,7 @@ export function Category({
           <div className="cursor-pointer" ref={drag}>
             <MdDragIndicator />
           </div>
-          {category.id} - {category.name}
+          {category.name}
         </span>
         <div className="flex items-center space-x-2">
           <button
