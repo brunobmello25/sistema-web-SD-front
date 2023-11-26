@@ -4,6 +4,7 @@ import React, {
   useState,
   useEffect,
   type ReactNode,
+  useMemo,
 } from "react";
 import axios, { type Axios } from "axios";
 import { env } from "~/env";
@@ -23,9 +24,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const api = axios.create({
-    baseURL: env.NEXT_PUBLIC_API_URL,
-  });
+  const api = useMemo(
+    () =>
+      axios.create({
+        baseURL: env.NEXT_PUBLIC_API_URL,
+        params: user ? { username: user.username } : {},
+      }),
+    [user],
+  );
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
