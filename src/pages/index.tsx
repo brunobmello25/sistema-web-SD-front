@@ -67,6 +67,7 @@ export default function Home() {
                 key={category.id}
                 category={category}
                 onTaskCreated={refetch}
+                onTaskUpdated={refetch}
               />
             ))}
           </div>

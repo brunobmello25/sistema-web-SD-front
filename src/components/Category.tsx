@@ -12,10 +12,17 @@ type Props = {
   category: Category;
   onTaskCreated: () => void;
   onEdit: () => void;
+  onTaskUpdated: () => void;
   onDelete: () => void;
 };
 
-export function Category({ category, onEdit, onDelete, onTaskCreated }: Props) {
+export function Category({
+  category,
+  onEdit,
+  onDelete,
+  onTaskCreated,
+  onTaskUpdated,
+}: Props) {
   const { setModal } = useModal();
   const { api } = useAppContext();
 
@@ -75,7 +82,7 @@ export function Category({ category, onEdit, onDelete, onTaskCreated }: Props) {
 
       <ul className="space-y-2">
         {category.tasks.map((task) => (
-          <Task key={task.id} title={task.title} />
+          <Task key={task.id} task={task} onTaskUpdated={onTaskUpdated} />
         ))}
       </ul>
       <button
