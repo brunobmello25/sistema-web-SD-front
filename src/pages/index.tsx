@@ -1,6 +1,6 @@
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { useMutation, useQuery } from "react-query";
+import { useQuery } from "react-query";
 
 import { Loading } from "~/components/Loading";
 import { useAppContext } from "~/context/app-context";
@@ -9,7 +9,6 @@ import { Category } from "~/components/Category";
 import { ModalContainer } from "~/components/ModalContainer";
 import { useModal } from "~/context/modal-context";
 import { AddCategoryModal } from "~/components/AddCategoryModal";
-import { createCategory } from "~/services/create-category";
 
 export default function Home() {
   const { loading: userLoading, user, api, loggedApiReady } = useAppContext();
@@ -44,20 +43,16 @@ export default function Home() {
       </Head>
       <main className="min-h-screen bg-gray-800 p-4">
         <div className="container mx-auto">
-          {/* Categories List */}
           <div className="space-y-6">
-            {/* Example Category */}
             {categories?.map((category) => (
               <Category
+                onDelete={refetch}
                 onEdit={refetch}
                 key={category.id}
                 category={category}
               />
             ))}
-
-            {/* Add more categories here */}
           </div>
-          {/* Add Category Button */}
           <button
             className="mt-6 w-full rounded bg-green-500 py-2 text-white hover:bg-green-600 focus:outline-none"
             onClick={() =>
