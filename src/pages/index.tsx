@@ -11,7 +11,13 @@ import { useModal } from "~/context/modal-context";
 import { AddCategoryModal } from "~/components/AddCategoryModal";
 
 export default function Home() {
-  const { loading: userLoading, user, api, loggedApiReady } = useAppContext();
+  const {
+    loading: userLoading,
+    user,
+    api,
+    logout,
+    loggedApiReady,
+  } = useAppContext();
   const router = useRouter();
   const { setModal } = useModal();
 
@@ -43,6 +49,16 @@ export default function Home() {
       </Head>
       <main className="min-h-screen bg-gray-800 p-4">
         <div className="container mx-auto">
+          <div className="mb-6 flex items-center justify-between">
+            <h1 className="text-3xl font-bold text-white">Suas tarefas</h1>
+            <button
+              className="rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:outline-none"
+              onClick={logout}
+            >
+              Sair
+            </button>
+          </div>
+
           <div className="space-y-6">
             {categories?.map((category) => (
               <Category
