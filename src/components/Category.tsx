@@ -6,20 +6,28 @@ import { EditCategoryModal } from "./EditCategoryModal";
 import { useMutation } from "react-query";
 import { deleteCategory } from "~/services/delete-category";
 import { useAppContext } from "~/context/app-context";
+import { CreateTaskModal } from "./CreateTaskModal";
 
 type Props = {
   category: Category;
+  onTaskCreated: () => void;
   onEdit: () => void;
   onDelete: () => void;
 };
 
-export function Category({ category, onEdit, onDelete }: Props) {
+export function Category({ category, onEdit, onDelete, onTaskCreated }: Props) {
   const { setModal } = useModal();
   const { api } = useAppContext();
 
   const deleteMutation = useMutation(() =>
     deleteCategory({ categoryId: category.id }, api),
   );
+
+  function handleAddTask() {
+    setModal(
+      <CreateTaskModal onTaskCreated={onTaskCreated} category={category} />,
+    );
+  }
 
   function handleDelete() {
     deleteMutation
@@ -70,7 +78,10 @@ export function Category({ category, onEdit, onDelete }: Props) {
           <Task key={task.id} title={task.title} />
         ))}
       </ul>
-      <button className="mt-4 w-full rounded bg-blue-500 py-2 text-white hover:bg-blue-600 focus:outline-none">
+      <button
+        onClick={handleAddTask}
+        className="mt-4 w-full rounded bg-blue-500 py-2 text-white hover:bg-blue-600 focus:outline-none"
+      >
         Adicionar Tarefa
       </button>
     </div>
