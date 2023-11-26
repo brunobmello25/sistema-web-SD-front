@@ -51,6 +51,7 @@ export default function Home() {
           {/* Add Category Button */}
           <button
             className="mt-6 w-full rounded bg-green-500 py-2 text-white hover:bg-green-600 focus:outline-none"
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
             onClick={() => {}} // Replace with function to add new category
           >
             Adicionar Categoria
