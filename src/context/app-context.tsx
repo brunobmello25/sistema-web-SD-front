@@ -17,6 +17,7 @@ interface ApiContextType {
   login: (username: string) => Promise<void>;
   loading: boolean;
   loggedApiReady: boolean;
+  logout: () => Promise<void>;
 }
 
 const AppContext = createContext<ApiContextType | null>(null);
@@ -75,10 +76,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  async function logout() {
+    localStorage.removeItem("user");
+    setUser(null);
+  }
+
   const loggedApiReady = !loading && !!user;
 
   return (
-    <AppContext.Provider value={{ user, api, login, loading, loggedApiReady }}>
+    <AppContext.Provider
+      value={{ user, api, login, loading, loggedApiReady, logout }}
+    >
       {children}
     </AppContext.Provider>
   );

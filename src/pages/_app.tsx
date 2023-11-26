@@ -1,6 +1,7 @@
 import { type AppType } from "next/dist/shared/lib/utils";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { AppProvider } from "~/context/app-context";
+import { ModalProvider } from "~/context/modal-context";
 
 import "~/styles/globals.css";
 
@@ -10,7 +11,9 @@ const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <QueryClientProvider client={queryClient}>
       <AppProvider>
-        <Component {...pageProps} />
+        <ModalProvider>
+          <Component {...pageProps} />
+        </ModalProvider>
       </AppProvider>
     </QueryClientProvider>
   );
