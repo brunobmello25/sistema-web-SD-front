@@ -48,7 +48,11 @@ export default function Home() {
           <div className="space-y-6">
             {/* Example Category */}
             {categories?.map((category) => (
-              <Category key={category.id} category={category} />
+              <Category
+                onEdit={refetch}
+                key={category.id}
+                category={category}
+              />
             ))}
 
             {/* Add more categories here */}
