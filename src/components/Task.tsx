@@ -92,9 +92,7 @@ export function Task({ onTaskUpdated, onTaskDeleted, task }: Props) {
         onChange={handleOnCheck}
       />
 
-      <span className="flex-grow text-white">
-        {task.id} - {task.title}
-      </span>
+      <span className="flex-grow text-white">{task.title}</span>
       <div className="flex items-center space-x-2">
         <button
           onClick={() =>
