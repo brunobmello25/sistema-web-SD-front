@@ -1,12 +1,17 @@
-import { FaEdit, FaTrash } from "react-icons/fa";
-import { type Category } from "~/protocols";
-import { Task } from "./Task";
-import { useModal } from "~/context/modal-context";
-import { EditCategoryModal } from "./EditCategoryModal";
 import { useMutation } from "react-query";
-import { deleteCategory } from "~/services/delete-category";
+import { useDrag } from "react-dnd";
+import { FaEdit, FaTrash } from "react-icons/fa";
+import { MdDragIndicator } from "react-icons/md";
+
+import { type DragableItem, type Category } from "~/protocols";
+import { useModal } from "~/context/modal-context";
 import { useAppContext } from "~/context/app-context";
+import { deleteCategory } from "~/services/delete-category";
+
+import { Task } from "./Task";
+import { EditCategoryModal } from "./EditCategoryModal";
 import { CreateTaskModal } from "./CreateTaskModal";
+import { dragableTypes } from "~/constants/dragable-types";
 
 type Props = {
   category: Category;
@@ -27,6 +32,18 @@ export function Category({
 }: Props) {
   const { setModal } = useModal();
   const { api } = useAppContext();
+
+  const [{ isDragging }, drag, preview] = useDrag<
+    DragableItem,
+    unknown,
+    { isDragging: boolean }
+  >(() => ({
+    type: dragableTypes.CATEGORY,
+    item: { id: category.id, type: dragableTypes.CATEGORY },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  }));
 
   const deleteMutation = useMutation(() =>
     deleteCategory({ categoryId: category.id }, api),
@@ -54,9 +71,16 @@ export function Category({
   }
 
   return (
-    <div className="rounded bg-gray-700 p-4">
+    <div
+      ref={preview}
+      className={`rounded bg-gray-700 p-4 ${isDragging && "opacity-60"}`}
+      id={`category-${category.id}`}
+    >
       <div className="mb-4 flex items-center justify-between">
-        <span className="font-sans text-xl font-bold text-white">
+        <span className="flex flex-row items-center justify-center font-sans text-xl font-bold text-white">
+          <div className="cursor-pointer" ref={drag}>
+            <MdDragIndicator />
+          </div>
           {category.name}
         </span>
         <div className="flex items-center space-x-2">

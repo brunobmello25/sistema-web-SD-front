@@ -1,5 +1,8 @@
 import { type AppType } from "next/dist/shared/lib/utils";
 import { QueryClient, QueryClientProvider } from "react-query";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+
 import { AppProvider } from "~/context/app-context";
 import { ModalProvider } from "~/context/modal-context";
 
@@ -12,7 +15,9 @@ const MyApp: AppType = ({ Component, pageProps }) => {
     <QueryClientProvider client={queryClient}>
       <AppProvider>
         <ModalProvider>
-          <Component {...pageProps} />
+          <DndProvider backend={HTML5Backend}>
+            <Component {...pageProps} />
+          </DndProvider>
         </ModalProvider>
       </AppProvider>
     </QueryClientProvider>
