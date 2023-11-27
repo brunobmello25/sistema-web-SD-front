@@ -68,16 +68,13 @@ export default function Home() {
     [categories],
   );
 
-  const [{ isOver }, drop] = useDrop<DragableItem, void, void>(
+  const [, drop] = useDrop<DragableItem, void, void>(
     () => ({
       accept: dragableTypes.CATEGORY,
       drop: (item, monitor) => {
         const dropPosition = monitor.getClientOffset();
         handleCategoryDrop(item.id, categories, dropPosition);
       },
-      collect: (monitor) => ({
-        isOver: !!monitor.isOver(),
-      }),
     }),
     [categories],
   );
