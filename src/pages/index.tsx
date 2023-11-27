@@ -80,9 +80,6 @@ export default function Home() {
         const dropPosition = monitor.getClientOffset();
         handleCategoryDrop(item.id, categories, dropPosition);
       },
-      collect: (monitor) => ({
-        isOver: !!monitor.isOver(),
-      }),
     }),
     [categories],
   );
