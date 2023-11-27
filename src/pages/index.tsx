@@ -18,6 +18,7 @@ import {
   type DropPosition,
 } from "~/protocols";
 import { useCallback } from "react";
+import { findDragableIdToBeAfter } from "~/utils/drag";
 
 export default function Home() {
   const {
@@ -51,7 +52,11 @@ export default function Home() {
     ) => {
       if (!categories || !dropPosition) return;
 
-      const idToBeAfter = findCategoryIdToBeAfter(categories, dropPosition);
+      const idToBeAfter = findDragableIdToBeAfter(
+        categories.map((c) => ({ id: c.id, type: dragableTypes.CATEGORY })),
+        dropPosition,
+        dragableTypes.CATEGORY,
+      );
 
       let beAfter = 0;
       if (idToBeAfter) {
@@ -119,6 +124,7 @@ export default function Home() {
                 onTaskCreated={refetch}
                 onTaskUpdated={refetch}
                 onTaskDeleted={refetch}
+                onTaskReordered={refetch}
               />
             ))}
           </div>
@@ -135,39 +141,4 @@ export default function Home() {
       <ModalContainer />
     </>
   );
-}
-
-function findCategoryIdToBeAfter(
-  categories: ICategory[],
-  dropPosition: DropPosition,
-): number | null {
-  let nearestCategoryId = null;
-  let minDistance = Infinity;
-
-  categories.forEach((category) => {
-    const categoryElement = document.getElementById(`category-${category.id}`);
-    if (categoryElement) {
-      const rect = categoryElement.getBoundingClientRect();
-      const { distance, isBelow } = calculateDistanceToEdge(rect, dropPosition);
-      if (distance < minDistance && isBelow) {
-        minDistance = distance;
-        nearestCategoryId = category.id;
-      }
-    }
-  });
-
-  return nearestCategoryId;
-}
-
-function calculateDistanceToEdge(
-  rect: DOMRect,
-  dropPosition: { x: number; y: number },
-): { distance: number; isBelow: boolean } {
-  const centerY = rect.top + rect.height / 2;
-  const isBelow = dropPosition.y > centerY; // Check if the drop is below the midpoint
-
-  const nearestEdge = isBelow ? rect.bottom : rect.top;
-  const distance = Math.abs(nearestEdge - dropPosition.y);
-
-  return { distance, isBelow };
 }
